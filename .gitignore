@@ -1,0 +1,43 @@
+# Maven build output
+target/
+
+# Maven dependency-reduced pom (only emitted when shade isn't told to skip it)
+dependency-reduced-pom.xml
+
+# Scala / sbt (in case you ever add sbt)
+.bsp/
+project/target/
+project/project/
+
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+.metals/
+.bloop/
+.ammonite/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.python-version
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Local override files (devs may want to keep these private)
+.envrc
+.env.local
+
+# Spark workdir/logs if anyone runs spark-shell from this dir
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Checkpoints from local Spark runs
+**/checkpoint/
+
+# Note: docker-compose volumes (otel_tempo-data, otel_prom-data) are
+# managed by Docker and live outside this directory, so no entry needed.

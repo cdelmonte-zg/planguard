@@ -1,0 +1,76 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: planguard-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"   # Jaeger UI (dev quick-look)
+    networks:
+      - otel
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: planguard-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks:
+      - otel
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: planguard-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - otel
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: planguard-grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - tempo
+    networks:
+      - otel
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.116.1
+    container_name: planguard-otel-collector
+    command: ["--config=/etc/otel-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-config.yaml:ro
+    ports:
+      - "4317:4317"     # OTLP gRPC (host -> collector)
+      - "4318:4318"     # OTLP HTTP
+      - "8889:8889"     # /metrics (Prometheus exporter)
+    depends_on:
+      - jaeger
+      - tempo
+    networks:
+      - otel
+
+volumes:
+  tempo-data:
+  prom-data:
+
+networks:
+  otel:
+    driver: bridge

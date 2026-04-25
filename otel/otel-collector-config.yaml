@@ -1,0 +1,57 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 200ms
+
+connectors:
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [1ms, 5ms, 10ms, 100ms, 1s]
+    dimensions:
+      - name: planguard.pattern
+      - name: planguard.node
+    metrics_flush_interval: 5s
+    # Drop series after 5 min of no new spans, so a one-shot job's metrics
+    # don't keep being re-exported forever after the JVM exits.
+    metrics_expiration: 5m
+    namespace: catalyst
+
+exporters:
+  debug:
+    # Set to `detailed` to dump full span attributes; `normal` is fine
+    # for everyday use and keeps the log volume reasonable.
+    verbosity: normal
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: ""
+    send_timestamps: true
+    enable_open_metrics: true
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/jaeger, otlp/tempo, spanmetrics]
+    metrics:
+      receivers: [spanmetrics]
+      exporters: [prometheus]
