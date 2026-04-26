@@ -118,9 +118,9 @@ case class DetectDangerousPatterns(session: SparkSession)
     expr.exists { case _: PythonUDF => true; case _ => false }
 
   // Collect[_] is the parent abstract class of CollectList, CollectSet, and
-  // CollectTopK — all share the same large-buffer profile. (CollectTopK is
-  // dedicated to Spark-ML internals; in user-facing queries the practically
-  // relevant cases are CollectList and CollectSet.)
+  // CollectTopK — all in org.apache.spark.sql.catalyst.expressions.aggregate,
+  // all sharing the same large-buffer profile. In user-facing queries the
+  // practically relevant cases are CollectList and CollectSet.
   private def containsCollect(expr: Expression): Boolean =
     expr.exists {
       case AggregateExpression(_: Collect[_], _, _, _, _) => true
