@@ -1,7 +1,7 @@
 # PlanGuard
 
-End-to-end verification of the example code described in the article
-*"The hidden DSL inside Catalyst"*: a check-rule registered through
+End-to-end verification of the example code described in the deep dive
+[The Hidden DSL in Catalyst](https://cdelmonte.dev/deep-dives/the-hidden-dsl-in-catalyst/): a check-rule registered through
 `SparkSessionExtensions.injectCheckRule` that detects four dangerous
 patterns in the analyzed logical plan (cartesian join, non-equi join →
 nested-loop, Python UDF in filter, `collect_list`/`collect_set` in
